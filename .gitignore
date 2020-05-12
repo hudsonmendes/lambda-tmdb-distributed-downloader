@@ -147,6 +147,6 @@ cython_debug/
 .DS_Store
 
 # Project Specific
+config.ini
 package/
-xx_run.py
 lambda_function.zip

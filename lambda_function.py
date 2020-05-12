@@ -1,6 +1,6 @@
 import os
 import json
-import imdb2tmdb
+import tdd
 
 
 def lambda_handler(event, context):
@@ -13,8 +13,8 @@ def lambda_handler(event, context):
     - event  : 'Records' have the messages received from SQS (full body)
     - context: lambda context wrapper
 
-    QueryString Parameters
-    ----------------------
+    Message Body
+    ------------
     - year   : the year for which movies will be downloaded
     - initial: the first non-blank character of the name of the movie
     """
@@ -28,16 +28,26 @@ def lambda_handler(event, context):
 
         initial = body['initial']
 
-        imdb_ids = imdb2tmdb.imdb.get_imdb_ids(year=year, initial=initial)
+        tmdb_api_key = os.environ['TMDB_API_KEY']
 
-        tmdb_movies_generator = imdb2tmdb.tmdb.get_tmdb_movies(
+        imdb_ids = tdd.imdb.movies.get_ids(
+            year=year,
+            initial=initial)
+
+        tmdb_movies = tdd.tmdb.movies.get_by(
             imdb_ids=imdb_ids,
-            tmdb_api_key=os.environ['TMDB_API_KEY'])
+            api_key=tmdb_api_key)
 
-        files.extend([
-            imdb2tmdb.s3.save(year, initial, imdb_id, tmdb_id, tmdb_movie)
-            for imdb_id, tmdb_id, tmdb_movie
-            in tmdb_movies_generator])
+        for tmdb_movie in tmdb_movies:
+            
+            tdd.tmdb.movies.export(tmdb_movie)
+            
+            tmdb_reviews = tdd.tmdb.reviews.get_by(
+                tmdb_id=tmdb_movie['id'],
+                api_key=tmdb_api_key)
+
+            for tmdb_review in tmdb_reviews:
+                tdd.tmdb.reviews.export(tmdb_review)
 
     return {
         'statusCode': 200,
