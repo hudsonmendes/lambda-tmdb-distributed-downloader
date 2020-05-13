@@ -1,3 +1,4 @@
+from typing import List
 import unidecode
 import string
 
@@ -10,7 +11,11 @@ class IMDbMovie:
     Wraps the Movie File, simplfying advanced parsing of the information
     """
 
-    def __init__(self, header, row, **kwargs):
+    def __init__(
+            self,
+            header: List[str],
+            row: List[str],
+            **kwargs):
         ix_id = header.index(IMDbMovie.HEADER_ID)
         ix_title = header.index(IMDbMovie.HEADER_TITLE)
         ix_year = header.index(IMDbMovie.HEADER_YEAR)

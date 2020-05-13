@@ -16,7 +16,7 @@ from .file_s3 import FileS3
 
 class IMDb:
     SOURCE_URL = 'https://datasets.imdbws.com/title.basics.tsv.gz'
-    CACHE_URL = 's3://hudsonmendes-datalake/imdb/title.basics-{date_tag}.tsv.gz'
+    CACHE_URL = 's3://{bucket_name}/imdb/title.basics-{date_tag}.tsv.gz'
 
     """
     Operates the IMDB official dataset, caching it into S3, and
@@ -29,7 +29,11 @@ class IMDb:
     or flagged as an attacker.
     """
 
-    def __init__(self, max_attempts=60, **kwargs):
+    def __init__(
+            self,
+            max_attempts=60,
+            bucket_name='hudsonmendes-datalake',
+            **kwargs):
         self.max_attempts = max_attempts
         self.s3 = boto3.resource('s3')
 
@@ -38,7 +42,7 @@ class IMDb:
 
         # to be up-to-date, we renew the cache everyday
         ts = int(time.mktime(datetime.date.today().timetuple()))
-        self.cache_url = IMDb.CACHE_URL.format(date_tag=ts)
+        self.cache_url = IMDb.CACHE_URL.format(bucket_name=bucket_name, date_tag=ts)
         self.cache_file = FileS3(self.cache_url)
 
     def get_movie_refs_stream(self, year: int, initial: str) -> Iterable[IMDbMovie]:

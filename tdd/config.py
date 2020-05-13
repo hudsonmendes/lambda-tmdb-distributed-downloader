@@ -1,3 +1,4 @@
+import os
 import configparser
 
 class Config:
@@ -14,15 +15,39 @@ class Config:
         self.config_path = config_path
         self.config.read(config_path)
 
+    def get_datalake_bucket_name(self):
+        """
+        Returns the [DATALAKE] BUCKET_NAME available prioritarily
+        in the os.environ context; otherwise it returns from the
+        `config.ini` file.
+        """
+        if 'DATALAKE_BUCKET_NAME' in os.environ:
+            return os.environ['DATALAKE_BUCKET_NAME']
+        else:
+            return self.config['DATALAKE'].get('BUCKET_NAME')
+
     def get_tmdb_api_key(self):
         """
-        Returns the [TMDB]API_KEY available in the config.ini file.
+        Returns the [TMDB] API_KEY available prioritarily in the
+        os.environ context; otherwise it returns from the
+        `config.ini` file.
         """
-        return self.config['TMDB'].get('API_KEY')
+        if 'TMDB_API_KEY' in os.environ:
+            return os.environ['TMDB_API_KEY']
+        else:
+            return self.config['TMDB'].get('API_KEY')
     
-    def set_tmdb_api_key(self, tmdb_api_key: str):
+    def update(
+            self,
+            datalake_bucket_name: str,
+            tmdb_api_key: str):
         """
         Updates the config and writes the config to `config_path`
         """
-        self.config['TMDB'].update({'API_KEY': tmdb_api_key})
+        if 'DATALAKE' not in self.config:
+            self.config.add_section('DATALAKE')
+        if 'TMDB' not in self.config:
+            self.config.add_section('TMDB')
+        self.config.set('DATALAKE', 'BUCKET_NAME', datalake_bucket_name)
+        self.config.set('TMDB', 'API_KEY', tmdb_api_key)
         self.config.write(open(self.config_path, 'w+'))

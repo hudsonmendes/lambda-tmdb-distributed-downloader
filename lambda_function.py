@@ -1,6 +1,6 @@
 import os
 import json
-import tdd
+from tdd import Config, IMDb, TMDb
 
 
 def lambda_handler(event, context):
@@ -19,7 +19,15 @@ def lambda_handler(event, context):
     - initial: the first non-blank character of the name of the movie
     """
 
-    files = []
+    config = Config()
+
+    imdb = IMDb(
+        bucket_name=config.get_datalake_bucket_name())
+
+    tmdb = TMDb(
+        bucket_name=config.get_datalake_bucket_name(),
+        api_key=config.get_tmdb_api_key())
+
     for record in event['Records']:
 
         body = json.loads(record['body'])
@@ -28,28 +36,19 @@ def lambda_handler(event, context):
 
         initial = body['initial']
 
-        tmdb_api_key = os.environ['TMDB_API_KEY']
-
-        imdb_ids = tdd.imdb.movies.get_ids(
+        imdb_movie_refs = imdb.get_movie_refs_stream(
             year=year,
             initial=initial)
 
-        tmdb_movies = tdd.tmdb.movies.get_by(
-            imdb_ids=imdb_ids,
-            api_key=tmdb_api_key)
+        tmdb_movie_and_reviews_generator = tmdb.get_movies_related_to(
+            imdb_movie_ref_stream=imdb_movie_refs)
 
-        for tmdb_movie in tmdb_movies:
-            
-            tdd.tmdb.movies.export(tmdb_movie)
-            
-            tmdb_reviews = tdd.tmdb.reviews.get_by(
-                tmdb_id=tmdb_movie['id'],
-                api_key=tmdb_api_key)
-
+        for tmdb_movie, tmdb_reviews in tmdb_movie_and_reviews_generator:
+            tmdb_movie.save()
             for tmdb_review in tmdb_reviews:
-                tdd.tmdb.reviews.export(tmdb_review)
+                tmdb_review.save()
 
     return {
         'statusCode': 200,
-        'body': json.dumps(files)
+        'body': json.dumps(body)
     }

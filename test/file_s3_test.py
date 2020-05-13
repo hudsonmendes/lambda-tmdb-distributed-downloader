@@ -18,7 +18,7 @@ def test_get_size_for_s3_existing():
 
 
 def test_copy_from_http(http_file):
-    s3_file = FileS3('s3://hudsonmendes-datalake/test.txt')
+    s3_file = FileS3('s3://hudsonmendes-datalake/test-copy.txt')
     try:
         s3_file.delete()
         s3_file.copy_from(http_file)
@@ -28,11 +28,22 @@ def test_copy_from_http(http_file):
 
 
 def test_touch(http_file):
-    s3_file = FileS3('s3://hudsonmendes-datalake/test.txt')
+    s3_file = FileS3('s3://hudsonmendes-datalake/test-touch.txt')
     try:
         s3_file.delete()
         s3_file.touch()
         assert s3_file.get_size() == len('touchè') + 1
+    finally:
+        s3_file.delete()
+
+
+def test_write(http_file):
+    s3_file = FileS3('s3://hudsonmendes-datalake/test-write.txt')
+    try:
+        s3_file.delete()
+        assert s3_file.get_size() == 0
+        s3_file.write({'name': 'hudsonmendes'})
+        assert s3_file.get_size() > 0
     finally:
         s3_file.delete()
 

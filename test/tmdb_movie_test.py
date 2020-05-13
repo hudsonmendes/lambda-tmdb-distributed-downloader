@@ -1,7 +1,6 @@
 import pytest
-import os
 import configparser
-from tdd import TMDbMovie
+from tdd import TMDbMovie, FileS3
 
 
 @pytest.fixture
@@ -10,13 +9,36 @@ def imdb_id():
 
 
 @pytest.fixture
+def bucket_name():
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+    return config['DATALAKE']['BUCKET_NAME']
+
+
+@pytest.fixture
 def api_key():
     config = configparser.ConfigParser()
-    config.read('../secrets.ini')
+    config.read('config.ini')
     return config['TMDB']['API_KEY']
 
 
-def test_get_document(imdb_id, api_key):
-    actual = TMDbMovie(imdb_id, api_key).get_document()
-    print(actual)
+@pytest.fixture
+def target(imdb_id, bucket_name, api_key):
+    return TMDbMovie(
+        api_key=api_key,
+        bucket_name=bucket_name,
+        imdb_id=imdb_id)
+
+def test_get_document(target):
+    actual = target.get_document()
     assert actual['id'] == 579583
+
+
+def test_imdb_id(target, imdb_id):
+    actual = target.get_document()
+    assert actual['id_imdb'] == imdb_id
+
+
+def test_save(target):
+    url = target.save()
+    assert FileS3(url).get_size() > 0
