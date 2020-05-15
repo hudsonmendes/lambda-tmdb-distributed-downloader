@@ -36,17 +36,16 @@ def lambda_handler(event, context):
 
         initial = body['initial']
 
-        imdb_movie_refs = imdb.get_movie_refs_stream(
+        imdb_movies_stream = imdb.get_movie_refs_stream(
             year=year,
             initial=initial)
 
         tmdb_movie_and_reviews_generator = tmdb.get_movies_related_to(
-            imdb_movie_ref_stream=imdb_movie_refs)
+            imdb_movies_stream=imdb_movies_stream)
 
         for tmdb_movie, tmdb_reviews in tmdb_movie_and_reviews_generator:
             tmdb_movie.save()
-            for tmdb_review in tmdb_reviews:
-                tmdb_review.save()
+            tmdb_reviews.save()
 
     return {
         'statusCode': 200,

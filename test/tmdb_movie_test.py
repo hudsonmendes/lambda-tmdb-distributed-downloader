@@ -4,6 +4,16 @@ from tdd import TMDbMovie, FileS3
 
 
 @pytest.fixture
+def year():
+    return 2000
+
+
+@pytest.fixture
+def initial():
+    return 'A'
+
+
+@pytest.fixture
 def imdb_id():
     return 'tt9686708'
 
@@ -23,11 +33,14 @@ def api_key():
 
 
 @pytest.fixture
-def target(imdb_id, bucket_name, api_key):
+def target(year, initial, imdb_id, bucket_name, api_key):
     return TMDbMovie(
-        api_key=api_key,
+        year=year,
+        initial=initial,
+        imdb_id=imdb_id,
         bucket_name=bucket_name,
-        imdb_id=imdb_id)
+        api_key=api_key)
+
 
 def test_get_document(target):
     actual = target.get_document()
@@ -42,3 +55,16 @@ def test_imdb_id(target, imdb_id):
 def test_save(target):
     url = target.save()
     assert FileS3(url).get_size() > 0
+
+
+def test_has_been_found_True(target):
+    assert target.has_been_found()
+
+
+def test_has_been_found_False(bucket_name, api_key):
+    assert not TMDbMovie(
+        year=year,
+        initial=initial,
+        imdb_id='tt0124798',
+        bucket_name=bucket_name,
+        api_key=api_key).has_been_found()

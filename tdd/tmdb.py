@@ -20,25 +20,37 @@ class TMDb:
 
     def get_movies_related_to(
             self,
-            imdb_movie_ref_stream: Iterable[IMDbMovie]) -> Iterable[Tuple[TMDbMovie, TMDbReviews]]:
+            imdb_movies_stream: Iterable[IMDbMovie]) -> Iterable[Tuple[TMDbMovie, TMDbReviews]]:
         """
         Iterates through the stream, requesting the TMDb Movie
         and all its pages of reviews, and yields both the movie
         and the reviews, so that they can be persisted
         """
-        for imdb_movie_ref in imdb_movie_ref_stream:
-            tmdb_movie = self.get_movie_by(imdb_id=imdb_movie_ref)
-            tmdb_movie_reviews = self.get_reviews_by(movie_id=tmdb_movie.get_id())
-            yield tmdb_movie, tmdb_movie_reviews
+        processed = 0
+        for imdb_movie in imdb_movies_stream:
+            
+            tmdb_movie = self.get_movie_by(imdb_movie=imdb_movie)
+            if tmdb_movie.has_been_found():
+                
+                tmdb_movie_reviews = self.get_reviews_by(imdb_movie=imdb_movie, tmdb_movie=tmdb_movie)
+                yield tmdb_movie, tmdb_movie_reviews
 
-    def get_movie_by(self, imdb_id):
+            processed += 1
+            if processed % 100 == 0:
+                print(f'[TMDb] processed {processed}')
+
+    def get_movie_by(self, imdb_movie):
         return TMDbMovie(
-            imdb_id=imdb_id,
+            year=imdb_movie.year,
+            initial=imdb_movie.initial,
+            imdb_id=imdb_movie.get_id(),
             bucket_name=self.bucket_name,
             api_key=self.api_key)
 
-    def get_reviews_by(self, movie_id):
+    def get_reviews_by(self, imdb_movie, tmdb_movie):
         return TMDbReviews(
-            movie_id=movie_id,
+            year=imdb_movie.year,
+            initial=imdb_movie.initial,
+            movie_id=tmdb_movie.get_id(),
             bucket_name=self.bucket_name,
             api_key=self.api_key)

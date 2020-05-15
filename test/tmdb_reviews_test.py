@@ -4,6 +4,16 @@ from tdd import TMDbReviews, FileS3
 
 
 @pytest.fixture
+def year():
+    return 2000
+
+
+@pytest.fixture
+def initial():
+    return 'A'
+
+
+@pytest.fixture
 def movie_id():
     return 19995
 
@@ -23,8 +33,10 @@ def api_key():
 
 
 @pytest.fixture
-def target(movie_id, bucket_name, api_key):
+def target(year, initial, movie_id, bucket_name, api_key):
     return TMDbReviews(
+        year=year,
+        initial=initial,
         movie_id=movie_id,
         bucket_name=bucket_name,
         api_key=api_key)

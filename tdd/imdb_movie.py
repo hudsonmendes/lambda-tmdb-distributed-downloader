@@ -24,6 +24,18 @@ class IMDbMovie:
         self.year = IMDbMovie.get_year_from(row[ix_year])
         self.initial = IMDbMovie.get_initial_from(self.title)
 
+    def get_id(self) -> str:
+        return self.id
+
+    def get_title(self) -> str:
+        return self.title
+
+    def get_year(self) -> int:
+        return self.year
+
+    def get_initial(self) -> str:
+        return self.initial
+
     @staticmethod
     def get_year_from(x):
         try:

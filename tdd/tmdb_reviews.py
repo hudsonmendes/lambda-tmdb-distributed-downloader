@@ -6,7 +6,7 @@ from .file_s3 import FileS3
 
 class TMDbReviews:
     URL_TMPL = 'https://api.themoviedb.org/3/movie/{movie_id}/reviews?api_key={api_key}&language=en-US&page={page}'
-    S3_TMPL = 's3://{bucket_name}/tmdb/tmdb-reviews/tmdb-movie-{movie_id}-review-{review_id}.json'
+    S3_TMPL = 's3://{bucket_name}/tmdb/reviews/year-{year}/initial-{initial}/tmdb-movie-{movie_id}-review-{review_id}.json'
 
     """
     Wraps the request to the TMDB review resource,
@@ -16,11 +16,15 @@ class TMDbReviews:
 
     def __init__(
             self,
+            year: int,
+            initial: str,
             movie_id: int,
             bucket_name: str,
             api_key: str,
             max_pages: int = 1000,
             **kwargs):
+        self.year = year
+        self.initial = initial
         self.movie_id = movie_id
         self.bucket_name = bucket_name
         self.api_key = api_key
@@ -43,6 +47,8 @@ class TMDbReviews:
         for doc in self.docs:
             url = TMDbReviews.S3_TMPL.format(
                 bucket_name=self.bucket_name,
+                year=self.year,
+                initial=self.initial,
                 movie_id=self.movie_id,
                 review_id=doc['id'])
             FileS3(url).write(doc)
@@ -60,7 +66,6 @@ class TMDbReviews:
                     movie_id=self.movie_id,
                     api_key=self.api_key,
                     page=page)
-                print(url)
                 try:
                     with urlopen(url) as res:
                         res = json.load(res)
