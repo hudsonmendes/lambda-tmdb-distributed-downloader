@@ -1,6 +1,7 @@
 import os
 import configparser
 
+
 class Config:
     """
     Manages the secrets required to run the app in
@@ -9,11 +10,10 @@ class Config:
 
     def __init__(
             self,
-            config_path:str = 'config.ini',
             **kwargs):
         self.config = configparser.ConfigParser()
-        self.config_path = config_path
-        self.config.read(config_path)
+        self.config_path = 'config.ini'
+        self.config.read(self.config_path)
 
     def get_datalake_bucket_name(self):
         """
@@ -36,7 +36,7 @@ class Config:
             return os.environ['TMDB_API_KEY']
         else:
             return self.config['TMDB'].get('API_KEY')
-    
+
     def update(
             self,
             datalake_bucket_name: str,
@@ -51,3 +51,9 @@ class Config:
         self.config.set('DATALAKE', 'BUCKET_NAME', datalake_bucket_name)
         self.config.set('TMDB', 'API_KEY', tmdb_api_key)
         self.config.write(open(self.config_path, 'w+'))
+
+    def to_env(self):
+        return {
+            'DATALAKE_BUCKET_NAME': self.get_datalake_bucket_name(),
+            'TMDB_API_KEY': self.get_tmdb_api_key()
+        }
