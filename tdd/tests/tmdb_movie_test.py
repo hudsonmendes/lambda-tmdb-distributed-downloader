@@ -1,6 +1,6 @@
 import pytest
 import configparser
-from tdd import TMDbMovie, FileS3
+from ..pipeline import TMDbMovie, FileS3
 
 
 @pytest.fixture

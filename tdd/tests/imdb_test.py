@@ -2,7 +2,7 @@ import pytest
 import time
 import datetime
 import configparser
-from tdd import IMDb, FileS3
+from ..pipeline import IMDb, FileS3
 
 
 @pytest.fixture

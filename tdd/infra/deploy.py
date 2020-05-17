@@ -5,7 +5,7 @@ import shutil
 import zipfile
 import json
 import boto3
-from config import Config
+from infra.config import Config
 
 
 class Deploy:
@@ -123,7 +123,6 @@ class DeployZipLambda:
         print('Deploy, adding code to ZIP')
         base_folder = os.getcwd()
         with zipfile.ZipFile(self.zip_path, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-            zip_file.write('lambda_function.py')
             zip_targets = self.get_source_target_files(base_folder=base_folder)
             for source_path, destination_path in zip_targets:
                 zip_file.write(source_path, destination_path)
@@ -144,11 +143,12 @@ class DeployZipLambda:
         if not file_predicate:
             def file_predicate(x): return True
         lib_code_folder = os.path.join(base_folder, target_folder)
+        path_root = os.path.join(base_folder, target_folder)
         for root, _, files in os.walk(lib_code_folder):
             for file in files:
                 if file_predicate(file):
                     source_path = os.path.join(root, file)
-                    destination_path = source_path[len(base_folder) + 1:]
+                    destination_path = source_path[len(path_root) + 1:]
                     yield source_path, destination_path
 
 

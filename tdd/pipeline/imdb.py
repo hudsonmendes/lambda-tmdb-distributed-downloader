@@ -57,24 +57,36 @@ class IMDb:
 
     def attempt_first_cache(self):
         if self.cache_file.get_size() == 0:
+            print('IMDB, file not cached, transfering it to datalake')
             self.cache_file.touch()
             self.cache_file.copy_from(self.source_file)
+        else:
+            print('IMDB, file already present in datalake')
 
     def await_until_cached(self):
         attempts = 0
         while self.cache_file.get_size() < self.source_file.get_size():
+            print('IMDB, waiting transference of IMDB file to datalake')
             time.sleep(1)  # wait 1 second and check again
             attempts += 1
             if attempts > self.max_attempts:
                 msg = f'[IMDB] the cache file never got ready, {self.max_attempts} attempts'
                 raise ResourceWarning(msg)
+        print('IMDB, file ready in datalake')
 
     def extract_movie_refs_from(self, stream, year, initial):
+        print('IMDB -> TMDB, streaming ids now...')
+        reviewed = 0
         with gzip.open(stream) as f_in:
             f_cur = codecs.iterdecode(f_in, 'utf-8')
             csv_reader = csv.reader(f_cur, delimiter='\t')
             header = next(csv_reader)
             for row in csv_reader:
+                # check if it matches year and initial, and yield if it does
                 imdb_movie = IMDbMovie(header, row)
                 if initial == imdb_movie.initial and year == imdb_movie.year:
                     yield imdb_movie
+                # log review progress
+                reviewed += 1
+                if reviewed % 100000 == 0:
+                    print(f'[IMDb] rewiewed {reviewed}')

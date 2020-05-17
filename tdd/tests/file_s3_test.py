@@ -1,5 +1,5 @@
 import pytest
-from tdd import FileHttp, FileS3, IMDb
+from ..pipeline import FileHttp, FileS3, IMDb
 
 
 @pytest.fixture

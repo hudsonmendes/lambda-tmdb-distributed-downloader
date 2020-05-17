@@ -28,16 +28,18 @@ class TMDb:
         """
         processed = 0
         for imdb_movie in imdb_movies_stream:
-            
+
+            # attempt find in TMDb
             tmdb_movie = self.get_movie_by(imdb_movie=imdb_movie)
             if tmdb_movie.has_been_found():
-                
                 tmdb_movie_reviews = self.get_reviews_by(imdb_movie=imdb_movie, tmdb_movie=tmdb_movie)
                 yield tmdb_movie, tmdb_movie_reviews
-
+            
+            # log review progress
             processed += 1
-            if processed % 100 == 0:
-                print(f'[TMDb] processed {processed}')
+            print(f'[TMDb] processed {processed}')
+
+        print(f'[TMDb] total {processed}')
 
     def get_movie_by(self, imdb_movie):
         return TMDbMovie(

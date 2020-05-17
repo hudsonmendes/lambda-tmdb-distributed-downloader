@@ -1,6 +1,7 @@
 import os
 import json
-from tdd import Config, IMDb, TMDb
+from pipeline import IMDb, TMDb
+from infra import Config
 
 
 def lambda_handler(event, context):
@@ -36,6 +37,8 @@ def lambda_handler(event, context):
 
         initial = body['initial']
 
+        print(f'Lambda, processsing partition ({year}, {initial})')
+
         imdb_movies_stream = imdb.get_movie_refs_stream(
             year=year,
             initial=initial)
@@ -43,9 +46,13 @@ def lambda_handler(event, context):
         tmdb_movie_and_reviews_generator = tmdb.get_movies_related_to(
             imdb_movies_stream=imdb_movies_stream)
 
+        processed_count = 0
         for tmdb_movie, tmdb_reviews in tmdb_movie_and_reviews_generator:
             tmdb_movie.save()
             tmdb_reviews.save()
+            processed_count += 1
+
+        print(f'Lambda, completed processing {processed_count}')
 
     return {
         'statusCode': 200,

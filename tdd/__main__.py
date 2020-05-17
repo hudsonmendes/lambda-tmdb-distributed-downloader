@@ -20,15 +20,15 @@ def development(datalake_bucket_name: str, tmdb_api_key: str):
     Setup the development environment locally, with the required configuration.
     `python tdd development --datalake_bucket_name [bucket_name] --tmdb_api_key [api_key]`
     """
-    from config import Config
+    from infra import Config
     Config().update(
         datalake_bucket_name=datalake_bucket_name,
         tmdb_api_key=tmdb_api_key)
 
 
 @cli.command()
-@click.option('--year', prompt='IMDB, Year', default=2000, help='Year of movies that will be downloaded')
-@click.option('--initial', prompt='IMDB, Initial', default='A', help='First letter of the films that will be downloaded')
+@click.option('--year', prompt='IMDB, Year', default=2004, help='Year of movies that will be downloaded')
+@click.option('--initial', prompt='IMDB, Initial', default='AD', help='First letter of the films that will be downloaded')
 @click.option('--queue_name', prompt='AWS SQS, Queue', default='hudsonmendes-tmdb-downloader-queue', help='The name of the queue to which we will send the message')
 def simulate(year: int, initial: str, queue_name: str):
     """
@@ -46,8 +46,8 @@ def simulate(year: int, initial: str, queue_name: str):
 
 
 @cli.command()
-@click.option('--year', prompt='IMDB, Year', default=2000, help='Year of movies that will be downloaded')
-@click.option('--initial', prompt='IMDB, Initial', default='A', help='First letter of the films that will be downloaded')
+@click.option('--year', prompt='IMDB, Year', default=2004, help='Year of movies that will be downloaded')
+@click.option('--initial', prompt='IMDB, Initial', default='AD', help='First letter of the films that will be downloaded')
 def download(year: int, initial: str):
     """
     Invokes the lambda_function manually for a one-off download.
@@ -66,7 +66,7 @@ def deploy(lambda_name, queue_name, datalake_bucket_name):
     """
     Deploy the system into lambda, creating everything that is necessary to run.
     """
-    from deploy import Deploy
+    from infra import Deploy
     Deploy(
         lambda_name=lambda_name,
         queue_name=queue_name,

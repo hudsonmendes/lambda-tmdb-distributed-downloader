@@ -1,4 +1,4 @@
-from tdd import FileHttp, IMDb
+from ..pipeline import FileHttp, IMDb
 
 
 def test_get_size_for_https():

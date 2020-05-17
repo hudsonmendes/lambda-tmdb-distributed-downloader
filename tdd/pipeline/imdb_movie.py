@@ -49,5 +49,9 @@ class IMDbMovie:
         initial = unidecode.unidecode(initial)
         initial = initial.translate(str.maketrans('', '', string.punctuation))
         if initial:
-            initial = initial[0].strip().upper()
+            initial = initial.strip().upper()
+            if len(initial) < 2:
+                missing_len = 2 - len(initial)
+                initial += ''.join(['_'] * missing_len)
+            initial = initial[0:2]
         return initial

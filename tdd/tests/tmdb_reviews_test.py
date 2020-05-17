@@ -1,6 +1,6 @@
 import pytest
 import configparser
-from tdd import TMDbReviews, FileS3
+from ..pipeline import TMDbReviews, FileS3
 
 
 @pytest.fixture
