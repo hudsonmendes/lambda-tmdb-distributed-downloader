@@ -6,6 +6,7 @@ class IMDbMovie:
     HEADER_ID = 'tconst'
     HEADER_TITLE = 'primaryTitle'
     HEADER_YEAR = 'startYear'
+    HEADER_TYPE = 'titleType'
 
     """
     Wraps the Movie File, simplfying advanced parsing of the information
@@ -17,9 +18,11 @@ class IMDbMovie:
             row: List[str],
             **kwargs):
         ix_id = header.index(IMDbMovie.HEADER_ID)
+        ix_type = header.index(IMDbMovie.HEADER_TYPE)
         ix_title = header.index(IMDbMovie.HEADER_TITLE)
         ix_year = header.index(IMDbMovie.HEADER_YEAR)
         self.id = row[ix_id]
+        self.type = row[ix_type]
         self.title = row[ix_title]
         self.year = IMDbMovie.get_year_from(row[ix_year])
         self.initial = IMDbMovie.get_initial_from(self.title)

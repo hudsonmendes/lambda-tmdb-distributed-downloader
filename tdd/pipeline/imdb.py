@@ -84,7 +84,7 @@ class IMDb:
             for row in csv_reader:
                 # check if it matches year and initial, and yield if it does
                 imdb_movie = IMDbMovie(header, row)
-                if initial == imdb_movie.initial and year == imdb_movie.year:
+                if initial == imdb_movie.initial and year == imdb_movie.year and imdb_movie.type == 'movie':
                     yield imdb_movie
                 # log review progress
                 reviewed += 1

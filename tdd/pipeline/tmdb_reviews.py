@@ -45,6 +45,7 @@ class TMDbReviews:
         self.ensure_cache()
         urls = []
         for doc in self.docs:
+            print(doc)
             url = TMDbReviews.S3_TMPL.format(
                 bucket_name=self.bucket_name,
                 year=self.year,
@@ -70,7 +71,9 @@ class TMDbReviews:
                     with urlopen(url) as res:
                         res = json.load(res)
                         if 'results' in res and res['results']:
-                            cache.extend(res['results'])
+                            for doc in res['results']:
+                                doc['movie_id'] = self.movie_id
+                                cache.append(doc)
                         else:
                             break
                 except:
