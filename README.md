@@ -25,38 +25,62 @@ I've then created this script that can be used to download, with good level of p
 
 Apart from the extra data that TMDB makes available (like full release date, for example), we attach the IMDB ID that was found (as `idIMDB`) to the TMDB movie JSON, and save it in S3.
 
+## Components & Resources
+
+This solution is composed by the following components:
+
+1. AWS SQS Queue that will receive all the requests to trigger the TMDB data download
+
+2. AWS Lambda Function that will consume the messages from SQS and perform the download
+
+3. AWS S3 Bucket, required for dumping the downloaded data
+
+3. **Fleet Launcher Jupyter Notebook**, that will prepare the messages ans send to SQS
+
+## Small "CLI" (Command Line INterface)
+
+The current code also has a small command line that helps us with what is needed in order to develop and run this program:
+
+1. **`python tdd development`:** creates the local `config.ini` that is reponsible for keeping your TMDB api key and your data lake bucket name
+
+2. **`python tdd deploy`:** installs the AWS infrastructure automatically interactively for you
+
+3. **`python tdd download:`** launches the downloader locally, downloads a single item, ideal for debugging
+
+3. **`python tdd simulate:`** send the message to SQS to download one single partition, ideal to test the system in AWS.
+
 ## How to Run
 
-1. Create a SQS queue named: `hudsonmendes-imdb2tmdb-movies-download-queue`, and ensure that the invisibility timeout of messages is set to 15 minutes
+### Setup Development Environment
 
-2. Create a Lambda function name: `hudsonmendes-imdb2tmdb-movies-download-lambda` and set it's timeout to 50 minutes
+1. Clone the repository locally, and
 
-3. Ensure that the lambda function's role has permissions to (a) run with SQS and (b) write to s3
-
-4. Enqueue what you want to collect using the following snipet:
+2. Setup your development environment: you will be prompted for information such as your `TMDB_API_KEY` and your `S3_BUCKET_NAME` (for your datalake)
 
 ```
-import json
-import boto3
-
-if __name__ == "__main__":
-    messages = [
-        { 'year'   : 2000, 'initial': 'A' },
-    ]
-    sqs = boto3.resource('sqs')
-    queue = sqs.get_queue_by_name(QueueName='hudsonmendes-imdb2tmdb-movies-download-queue')
-    for message in messages:
-        body = json.dumps(message)
-        queue.send_message(MessageBody=body)
+cd ~/[workspace_path]
+git clone git@github.com:hudsonmendes/lambda-tmdb-distributed-downloader.git
+cd lambda-tmdb-distributed-downloader
+python tdd development
 ```
 
-## Important
+### Deploy the lambda to your AWS account
 
-1. This has been coded with the sole purpose of speeding up the process of building a IMDB to TMDB dataset
+**Important:** this step requires you to have your `aws configure` run previously.
 
-2. There is a number of coding issues, and this code lacks unit testing.
+1. Run the deployment code,
 
-3. I got little time to maintain it, but contributions would be very welcome.
+2. Tell where you want the system to be deployed (parameters), and
+
+3. Check to see if the resources were properly created
+
+```
+# you must be connected to your amazon account
+# aws configure
+
+# here we will deploy the components to lambda
+python tdd deploy
+```
 
 ## Contributions
 
